@@ -29,14 +29,14 @@ public class AuthenticationController {
 	
 	@PostMapping("/user/uploadnewvoice")
 	public ResponseEntity<ResponseMessage> uploadVoiceFile(
-			@RequestParam("file") MultipartFile file , @Valid @RequestParam("userId") int id ) throws UnsupportedAudioFileException {
+			@RequestParam("file") MultipartFile file , @Valid @RequestParam("email") String email ) throws UnsupportedAudioFileException {
 		String message = "";
 //		int id = 1;
 		ResponseMessage response = new ResponseMessage();
 		try {
 			// validate file format and file size
-			authService.store(file, id);
-			message = "Uploaded the voice sample successfully for user, " + id;
+			authService.store(file, email);
+			message = "Uploaded the voice sample successfully for user, " + email;
 			LOGGER.info(message);
 			response.setStatus("200");
             response.setDescription(message);

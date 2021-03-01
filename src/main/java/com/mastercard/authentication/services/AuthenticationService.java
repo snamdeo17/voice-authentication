@@ -46,10 +46,10 @@ public class AuthenticationService implements IAuthenticateService {
 
 	private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
-	public CustomerVoiceData store(MultipartFile file, @Valid int id) throws Exception {
+	public CustomerVoiceData store(MultipartFile file, @Valid String email) throws Exception {
 		String fileName = StringUtils.cleanPath(file.getOriginalFilename());
 		CustomerVoiceData voiceSample = null;
-		Customer customer = findCustomerById(id);
+		Customer customer = findCustomerByEmail(email);
 		if (null == customer) {
 			LOGGER.error("User not found");
 			throw new Exception("User not found");
@@ -64,8 +64,8 @@ public class AuthenticationService implements IAuthenticateService {
 		return authRepository.findById(id).get();
 	}
 
-	public Customer findCustomerById(int id) {
-		return customerRepository.findById(id).orElse(null);
+	public Customer findCustomerByEmail(String email) {
+		return customerRepository.findByEmail(email);
 	}
 
 	@Override
@@ -83,6 +83,13 @@ public class AuthenticationService implements IAuthenticateService {
 
 				List<MatchResult<String>> matches = null;
 				String filePathMatch = new StringBuilder(path + id + "\\").toString();
+				  File userDir = new File(filePathMatch);
+			      boolean bool = userDir.mkdir();
+			      if(bool){
+			    	  LOGGER.info("Directory created successfully");
+			      }else{
+			    	  LOGGER.error("Sorry couldn’t create specified directory");
+			      }
 				try {
 					File storedFile = createFile(filePathMatch + storedSample.getName(), storedSample.getData());
 				} catch (IOException e1) {
@@ -101,7 +108,7 @@ public class AuthenticationService implements IAuthenticateService {
 						isMatched = true;
 						StringBuilder sb = new StringBuilder();
 
-						if (f.getDistance() < 0.1) {
+						if (f.getDistance() < 1.5) {
 							sb.append("Input sample matched!");
 							isMatched = isMatched && true;
 						} else {
@@ -132,5 +139,11 @@ public class AuthenticationService implements IAuthenticateService {
 		os1.write(data);
 		os1.close();
 		return inputFile;
+	}
+
+	@Override
+	public CustomerVoiceData store(MultipartFile file, @Valid int id) throws IOException, Exception {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

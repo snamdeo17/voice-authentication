@@ -25,7 +25,7 @@ public class CustomerVoiceData {
     @JoinColumn(name = "user_id")
 	private Customer customer;
 
-	@Column(unique = true)
+	@Column
 	@NotNull
 	private String name;
 

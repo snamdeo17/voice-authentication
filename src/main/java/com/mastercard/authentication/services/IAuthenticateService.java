@@ -13,6 +13,7 @@ import com.mastercard.authentication.models.CustomerVoiceData;
 public interface IAuthenticateService {
 
 	public CustomerVoiceData store(MultipartFile file, @Valid int id) throws IOException, Exception;
+	public CustomerVoiceData store(MultipartFile file, @Valid String email) throws IOException, Exception;
 
 	public boolean authenticateUser(MultipartFile file, @Valid int id) throws IOException, UnsupportedAudioFileException, Exception;
 }

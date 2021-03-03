@@ -108,7 +108,7 @@ public class AuthenticationService implements IAuthenticateService {
 						isMatched = true;
 						StringBuilder sb = new StringBuilder();
 
-						if (f.getDistance() < 0.7) {
+						if (f.getDistance() < 1.0) {
 							sb.append("Input sample matched!");
 							isMatched = isMatched && true;
 						} else {

@@ -76,6 +76,14 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>com.bitsinharmony</groupId>
+			<artifactId>recognito</artifactId>
+			<version>0.1.0-SNAPSHOT</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/dependencies/recognito-0.1.0-SNAPSHOT.jar</systemPath>
+		</dependency>
+
 
 	</dependencies>
 
@@ -88,7 +96,6 @@
 				<directory>src/main/resources</directory>
 				<filtering>true</filtering>
 			</resource>
-
 
 		</resources>
 		<plugins>

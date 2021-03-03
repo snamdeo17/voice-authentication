@@ -82,16 +82,20 @@ public class AuthenticationService implements IAuthenticateService {
 			dataList.forEach(storedSample -> {
 
 				List<MatchResult<String>> matches = null;
+				File storedFile = null;
 				String filePathMatch = new StringBuilder(path + id + "\\").toString();
 				  File userDir = new File(filePathMatch);
-			      boolean bool = userDir.mkdir();
-			      if(bool){
-			    	  LOGGER.info("Directory created successfully");
-			      }else{
-			    	  LOGGER.error("Sorry couldn’t create specified directory");
-			      }
+				  if(!userDir.exists()) {
+				      boolean bool = userDir.mkdir();
+				      if(bool){
+				    	  LOGGER.info("Directory created successfully");
+				      }else{
+				    	  LOGGER.error("Sorry couldn’t create specified directory");
+				      }
+				  }
+
 				try {
-					File storedFile = createFile(filePathMatch + storedSample.getName(), storedSample.getData());
+					storedFile = createFile(filePathMatch + storedSample.getName(), storedSample.getData());
 				} catch (IOException e1) {
 					LOGGER.error(e1.getMessage(), e1);
 				}
@@ -108,7 +112,7 @@ public class AuthenticationService implements IAuthenticateService {
 						isMatched = true;
 						StringBuilder sb = new StringBuilder();
 
-						if (f.getDistance() < 1.0) {
+						if (f.getDistance() < 0.4) {
 							sb.append("Input sample matched!");
 							isMatched = isMatched && true;
 						} else {
@@ -123,6 +127,12 @@ public class AuthenticationService implements IAuthenticateService {
 					});
 				}
 				inputFile.delete();
+				if(storedFile != null) {
+					storedFile.delete();
+				}
+				if(userDir.exists()) {
+					userDir.delete();
+				}
 			});
 		}
 		else {

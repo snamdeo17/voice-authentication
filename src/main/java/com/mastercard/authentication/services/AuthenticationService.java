@@ -75,6 +75,8 @@ public class AuthenticationService implements IAuthenticateService {
 		byte[] data = file.getBytes();
 
 		File inputFile = createFile(inputPath + fileName, data);
+		LOGGER.info("inputPath is:"+inputPath);
+		LOGGER.info("inputfileName is:"+fileName);
 		// Fetch samples from database
 		List<CustomerVoiceData> dataList = customerVoiceDataRepository.findCustomerVoiceDataByUserID(id);
 

@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.bitsinharmony.recognito.MatchResult;
 import com.mastercard.authentication.config.VoiceMatchConfig;
+import com.mastercard.authentication.constant.Constants;
 import com.mastercard.authentication.models.Customer;
 import com.mastercard.authentication.models.CustomerVoiceData;
 import com.mastercard.authentication.repository.AuthRepository;
@@ -35,12 +36,6 @@ public class AuthenticationService implements IAuthenticateService {
 
 	@Autowired
 	CustomerVoiceDataRepository customerVoiceDataRepository;
-
-	@Value("${voice.data.path}")
-	private String path;
-
-	@Value("${voice.input.path}")
-	private String inputPath;
 
 	private boolean isMatched = true;
 
@@ -74,6 +69,21 @@ public class AuthenticationService implements IAuthenticateService {
 		String fileName = StringUtils.cleanPath(file.getOriginalFilename());
 		byte[] data = file.getBytes();
 
+		String inputPath = System.getProperty(Constants.USER_HOME) + File.separatorChar + 
+				Constants.VOICE_MASTER_AUTHENTICATION +  File.separatorChar + 
+                Constants.INPUT+  File.separatorChar;
+		
+		String inputFilePathMatch = new StringBuilder(inputPath).toString();
+		  File inputUserDir = new File(inputFilePathMatch);
+		  if(!inputUserDir.exists()) {
+		      boolean bool = inputUserDir.mkdirs();
+		      if(bool){
+		    	  LOGGER.info("Input Directory created successfully");
+		      }else{
+		    	  LOGGER.error("Sorry couldn’t create specified Input directory");
+		      }
+		  }
+
 		File inputFile = createFile(inputPath + fileName, data);
 		LOGGER.info("inputPath is:"+inputPath);
 		LOGGER.info("inputfileName is:"+fileName);
@@ -85,10 +95,14 @@ public class AuthenticationService implements IAuthenticateService {
 
 				List<MatchResult<String>> matches = null;
 				File storedFile = null;
-				String filePathMatch = new StringBuilder(path + id + "\\").toString();
+				String tempPath = System.getProperty(Constants.USER_HOME) + File.separatorChar + 
+						Constants.VOICE_MASTER_AUTHENTICATION +  File.separatorChar + 
+		                Constants.TEMP+  File.separatorChar;
+
+				String filePathMatch = new StringBuilder(tempPath + id + File.separatorChar).toString();
 				  File userDir = new File(filePathMatch);
 				  if(!userDir.exists()) {
-				      boolean bool = userDir.mkdir();
+				      boolean bool = userDir.mkdirs();
 				      if(bool){
 				    	  LOGGER.info("Directory created successfully");
 				      }else{
@@ -132,7 +146,10 @@ public class AuthenticationService implements IAuthenticateService {
 						System.out.println(matchesResult);
 					});
 				}
-				inputFile.delete();
+				boolean isRemoved = inputFile.delete();
+				if(isRemoved) {
+					LOGGER.info("input file has been removed");
+				}
 				if(storedFile != null) {
 					storedFile.delete();
 				}

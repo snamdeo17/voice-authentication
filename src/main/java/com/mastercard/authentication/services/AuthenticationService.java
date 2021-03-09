@@ -102,6 +102,9 @@ public class AuthenticationService implements IAuthenticateService {
 
 				// Match input voice sample with database sample
 				VoiceMatchConfig voiceMatch = new VoiceMatchConfig(filePathMatch);
+				LOGGER.info("filePathMatch is:"+filePathMatch);
+				LOGGER.info("storedSample.getName() is:"+storedSample.getName());
+				LOGGER.info("storedSample.getData() is:"+storedSample.getData());
 				try {
 					matches = voiceMatch.recognito.identify(inputFile);
 				} catch (UnsupportedAudioFileException | IOException e) {

@@ -61,7 +61,7 @@ public class AuthenticationController {
 			if(!result) {
 				throw new Exception("User is not valid");
 			}
-			message = "User's voice is authenticated successfully for user, " + id;
+			message = "User's voice is authenticated successfully";
 			LOGGER.info(message);
 			response.setData(result);
 			response.setStatus("200");
@@ -70,7 +70,7 @@ public class AuthenticationController {
 
 		} catch (Exception e) {
 			LOGGER.error(e.getMessage(), e);
-			message = "User's voice is not authenticated successfully!";
+			message = "User's voice is not authenticated";
 			response.setStatus("401");
             response.setDescription(message);
 			return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);

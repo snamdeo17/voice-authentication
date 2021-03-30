@@ -11,35 +11,33 @@ import javax.validation.constraints.Email;
 
 import com.sun.istack.NotNull;
 
-import io.swagger.annotations.ApiModelProperty;
-
 @Entity
 public class Customer implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@ApiModelProperty(required = false, hidden = true)
-	private int userId;
-	
+	private Integer userId;
+
 	private String fname;
-	
+
 	private String lname;
-	
+
 	@Column(unique = true)
 	@NotNull
 	@Email(message = "Email should be in valid format")
 	private String email;
-	
+
 	@Column(unique = true)
 	private String secretCode;
 
-//	@OneToOne(mappedBy = "walletOfCustomer")
-//	@JsonIgnore
-//	private Wallet wallet;
-//
-//	@OneToMany(fetch = FetchType.EAGER, mappedBy = "accountHolder", cascade = CascadeType.ALL)
-//	@JsonIgnore
-//	private List<Account> customerAccounts;
+	// @OneToOne(mappedBy = "walletOfCustomer")
+	// @JsonIgnore
+	// private Wallet wallet;
+	//
+	// @OneToMany(fetch = FetchType.EAGER, mappedBy = "accountHolder", cascade =
+	// CascadeType.ALL)
+	// @JsonIgnore
+	// private List<Account> customerAccounts;
 
 	private static final long serialVersionUID = 1L;
 
@@ -54,11 +52,11 @@ public class Customer implements Serializable {
 		this.email = email;
 	}
 
-	public int getUserId() {
+	public Integer getUserId() {
 		return userId;
 	}
 
-	public void setUserId(int userId) {
+	public void setUserId(Integer userId) {
 		this.userId = userId;
 	}
 

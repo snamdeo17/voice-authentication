@@ -13,6 +13,7 @@ import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -42,6 +43,9 @@ public class AuthenticationService implements IAuthenticateService {
 
 	@Autowired
 	UserVoiceDistanceRepository distanceRepository;
+
+	@Value("${recongnito.voice.distance.offset:.05}")
+	private Double offset;
 
 	private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
@@ -222,8 +226,8 @@ public class AuthenticationService implements IAuthenticateService {
 					voiceDistance = new UserVoiceDistance();
 				}
 				voiceDistance.setCustomer(customerRepository.findById(id).get());
-				voiceDistance.setMaxDistance(maxNumber);
-				voiceDistance.setMinDistance(minNumber);
+				voiceDistance.setMaxDistance(maxNumber + offset);
+				voiceDistance.setMinDistance(minNumber - offset);
 				distanceRepository.save(voiceDistance);
 
 			} catch (UnsupportedAudioFileException | IOException e) {

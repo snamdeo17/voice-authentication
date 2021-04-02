@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
@@ -19,11 +20,14 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.bitsinharmony.recognito.MatchResult;
+import com.google.gson.Gson;
 import com.mastercard.authentication.config.VoiceMatchConfig;
 import com.mastercard.authentication.constant.Constants;
+import com.mastercard.authentication.models.AuthHistory;
 import com.mastercard.authentication.models.Customer;
 import com.mastercard.authentication.models.CustomerVoiceData;
 import com.mastercard.authentication.models.UserVoiceDistance;
+import com.mastercard.authentication.repository.AuthHistoryRepository;
 import com.mastercard.authentication.repository.AuthRepository;
 import com.mastercard.authentication.repository.CustomerRepository;
 import com.mastercard.authentication.repository.CustomerVoiceDataRepository;
@@ -43,6 +47,9 @@ public class AuthenticationService implements IAuthenticateService {
 
 	@Autowired
 	UserVoiceDistanceRepository distanceRepository;
+
+	@Autowired
+	private AuthHistoryRepository authHistoryRepository;
 
 	@Value("${recongnito.voice.distance.offset:.05}")
 	private Double offset;
@@ -94,68 +101,75 @@ public class AuthenticationService implements IAuthenticateService {
 		File inputFile = createFile(inputPath + fileName, data);
 		LOGGER.info("inputPath is:" + inputPath);
 		LOGGER.info("inputfileName is:" + fileName);
+
 		// Fetch samples from database
 		List<CustomerVoiceData> dataList = customerVoiceDataRepository.findCustomerVoiceDataByUserID(id);
 		UserVoiceDistance voiceDistance = distanceRepository.findDistanceByUserId(id);
+		String tempPath = System.getProperty(Constants.USER_HOME) + File.separatorChar
+				+ Constants.VOICE_MASTER_AUTHENTICATION + File.separatorChar + Constants.TEMP + File.separatorChar;
+
+		String filePathMatch = new StringBuilder(tempPath + id + File.separatorChar).toString();
+		File userDir = new File(filePathMatch);
+		if (!userDir.exists()) {
+			boolean bool = userDir.mkdirs();
+			if (bool) {
+				LOGGER.info("Directory created successfully");
+			} else {
+				LOGGER.error("Sorry couldn’t create specified directory");
+			}
+		}
 		if (!dataList.isEmpty()) {
 			for (CustomerVoiceData storedSample : dataList) {
-				List<MatchResult<String>> matches = null;
-				File storedFile = null;
-				String tempPath = System.getProperty(Constants.USER_HOME) + File.separatorChar
-						+ Constants.VOICE_MASTER_AUTHENTICATION + File.separatorChar + Constants.TEMP
-						+ File.separatorChar;
-
-				String filePathMatch = new StringBuilder(tempPath + id + File.separatorChar).toString();
-				File userDir = new File(filePathMatch);
-				if (!userDir.exists()) {
-					boolean bool = userDir.mkdirs();
-					if (bool) {
-						LOGGER.info("Directory created successfully");
-					} else {
-						LOGGER.error("Sorry couldn’t create specified directory");
-					}
-				}
-
 				String newFileName = id + "_" + storedSample.getName();
 				try {
-					storedFile = createFile(filePathMatch + newFileName, storedSample.getData());
+					createFile(filePathMatch + newFileName, storedSample.getData());
 				} catch (IOException e1) {
 					LOGGER.error(e1.getMessage(), e1);
 				}
-
-				// Match input voice sample with database sample
-				VoiceMatchConfig voiceMatch = new VoiceMatchConfig(filePathMatch);
-				LOGGER.info("filePathMatch is:" + filePathMatch);
-				LOGGER.info("storedSample.getName() is:" + newFileName);
-				LOGGER.info("storedSample.getData() is:" + storedSample.getData());
-				try {
-					matches = voiceMatch.recognito.identify(inputFile);
-				} catch (UnsupportedAudioFileException | IOException e) {
-					LOGGER.error(e.getMessage(), e);
-				}
-				if (null != matches) {
-					matches.stream().forEach(match -> {
-						LOGGER.debug("match.getKey() " + match.getKey());
-						LOGGER.debug("match.getDistance() " + match.getDistance());
-						LOGGER.debug("match.getLikelihoodRatio() " + match.getLikelihoodRatio());
-					});
-					isMatched = matches.stream().filter(f -> f.getDistance() <= voiceDistance.getMaxDistance()
-							&& f.getDistance() >= voiceDistance.getMinDistance()).findAny().isPresent();
-					if (isMatched) {
-						break;
-					}
-				}
-				boolean isRemoved = inputFile.delete();
-				if (isRemoved) {
-					LOGGER.info("input file has been removed");
-				}
-				if (storedFile != null) {
-					storedFile.delete();
-				}
-				if (userDir.exists()) {
-					userDir.delete();
-				}
 			}
+
+			List<MatchResult<String>> matches = null;
+			// Match input voice sample with database sample
+			VoiceMatchConfig voiceMatch = new VoiceMatchConfig(filePathMatch);
+			// LOGGER.info("filePathMatch is:" + filePathMatch + newFileName);
+			// LOGGER.info("storedSample.getName() is:" + newFileName);
+			// LOGGER.info("storedSample.getData() is:" + storedSample.getData());
+			try {
+				matches = voiceMatch.recognito.identify(inputFile);
+			} catch (UnsupportedAudioFileException | IOException e) {
+				LOGGER.error(e.getMessage(), e);
+			}
+			if (null != matches) {
+				matches.stream().forEach(match -> {
+					LOGGER.info("match.getKey() " + match.getKey());
+					LOGGER.info("match.getDistance() " + match.getDistance());
+					LOGGER.info("match.getLikelihoodRatio() " + match.getLikelihoodRatio());
+				});
+				isMatched = matches.stream().filter(f -> f.getDistance() <= voiceDistance.getMaxDistance()
+						&& f.getDistance() >= voiceDistance.getMinDistance()).findAny().isPresent();
+			}
+			boolean isRemoved = inputFile.delete();
+			if (isRemoved) {
+				LOGGER.info("input file has been removed");
+			}
+			if (userDir != null) {
+				userDir.delete();
+			}
+			if (userDir.exists()) {
+				userDir.delete();
+			}
+
+			AuthHistory ah = new AuthHistory();
+			ah.setData(file.getBytes());
+			ah.setDate(new Date());
+			ah.setUser(customerRepository.findById(id).get());
+			ah.setStatus(isMatched);
+			Gson gson = new Gson();
+			String matchesJson = gson.toJson(matches); 
+			LOGGER.info("Matches: ", matchesJson);
+			ah.setDistanceCalculated(matchesJson);
+			authHistoryRepository.save(ah);
+
 		}
 		return isMatched;
 

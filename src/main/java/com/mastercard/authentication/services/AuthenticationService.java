@@ -76,6 +76,10 @@ public class AuthenticationService implements IAuthenticateService {
 	public CustomerVoiceData getFile(Long id) {
 		return authRepository.findById(id).get();
 	}
+	
+	public Customer findById(int id) {		
+		return customerRepository.findById(id).get();
+	}
 
 	public Customer findCustomerByEmail(String email) {
 		return customerRepository.findByEmail(email);

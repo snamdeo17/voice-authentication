@@ -4,6 +4,7 @@ public class ResponseMessage {
 	private String status;
 	private String description;
 	private Object data;
+	private String userName;	
 
 	public ResponseMessage() {
 		super();
@@ -42,5 +43,13 @@ public class ResponseMessage {
 
 	public void setData(Object data) {
 		this.data = data;
+	}
+	
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
 	}
 }

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.mastercard.authentication.dto.ResponseMessage;
+import com.mastercard.authentication.models.Customer;
 import com.mastercard.authentication.services.IAuthenticateService;
 
 @RestController
@@ -61,11 +62,13 @@ public class AuthenticationController {
 			if (!result) {
 				throw new Exception("User is not valid");
 			}
+			Customer customer = authService.findById(id);
 			message = "User's voice is authenticated successfully";
 			LOGGER.info(message);
 			response.setData(result);
 			response.setStatus("200");
 			response.setDescription(message);
+			response.setUserName(customer.getFname() + " " + customer.getLname());
 			return new ResponseEntity<>(response, HttpStatus.OK);
 
 		} catch (Exception e) {

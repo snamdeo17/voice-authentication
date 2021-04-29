@@ -13,6 +13,7 @@ public class Constants {
     public static final String VOICE_MASTER_AUTHENTICATION = "voice-master-authentication";
     public static final String INPUT = "input";
     public static final String TEMP = "temp";
+    public static final String HISTORY = "history";
     public static final String VOICE_SAMPLES = "VOICE_SAMPLES";
     public static final String USER_HOME = "user.home";
 

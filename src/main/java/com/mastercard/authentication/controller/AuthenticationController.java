@@ -1,5 +1,7 @@
 package com.mastercard.authentication.controller;
 
+import java.util.List;
+
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.validation.Valid;
 
@@ -9,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.mastercard.authentication.dto.ResponseMessage;
+import com.mastercard.authentication.models.AuthHistory;
 import com.mastercard.authentication.models.Customer;
 import com.mastercard.authentication.services.IAuthenticateService;
 
@@ -29,8 +33,8 @@ public class AuthenticationController {
 	private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
 	@PostMapping("/user/uploadnewvoice")
-	public ResponseEntity<ResponseMessage> uploadVoiceFile(
-			@RequestParam("file") MultipartFile file , @Valid @RequestParam("email") String email ) throws UnsupportedAudioFileException {
+	public ResponseEntity<ResponseMessage> uploadVoiceFile(@RequestParam("file") MultipartFile file,
+			@Valid @RequestParam("email") String email) throws UnsupportedAudioFileException {
 		String message = "";
 		// int id = 1;
 		ResponseMessage response = new ResponseMessage();
@@ -53,7 +57,8 @@ public class AuthenticationController {
 	}
 
 	@PostMapping("/user/authenticatevoice")
-	public ResponseEntity<ResponseMessage> authenticateUserVoice(@RequestParam("file") MultipartFile file, @Valid @RequestParam("userId") int id) throws UnsupportedAudioFileException {
+	public ResponseEntity<ResponseMessage> authenticateUserVoice(@RequestParam("file") MultipartFile file,
+			@Valid @RequestParam("userId") int id) throws UnsupportedAudioFileException {
 		String message = "";
 		ResponseMessage response = new ResponseMessage();
 		try {
@@ -98,5 +103,13 @@ public class AuthenticationController {
 			response.setDescription(message);
 			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+
+	@GetMapping("/user/authhistory/{userId}")
+	public ResponseEntity<ResponseMessage> getAuthHistory(@PathVariable("userId") int id) {
+		ResponseMessage response = new ResponseMessage();
+		List<AuthHistory> userAuthHistory = authService.getUserAuthHistory(id);
+		response.setData(userAuthHistory);
+		return new ResponseEntity<ResponseMessage>(response, HttpStatus.OK);
 	}
 }

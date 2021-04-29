@@ -11,6 +11,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 public class AuthHistory {
 
@@ -22,6 +24,7 @@ public class AuthHistory {
 	@JoinColumn(name = "user_id")
 	private Customer user;
 
+	@JsonIgnore
 	@Lob
 	@Column(unique = true)
 	private byte[] data;

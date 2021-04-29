@@ -53,7 +53,7 @@ public class AuthenticationService implements IAuthenticateService {
 
 	@Value("${recongnito.voice.distance.offset:.05}")
 	private Double offset;
-	
+
 	@Value("${voice.authentication.default:true}")
 	private Boolean defaultAuth;
 
@@ -76,8 +76,8 @@ public class AuthenticationService implements IAuthenticateService {
 	public CustomerVoiceData getFile(Long id) {
 		return authRepository.findById(id).get();
 	}
-	
-	public Customer findById(int id) {		
+
+	public Customer findById(int id) {
 		return customerRepository.findById(id).get();
 	}
 
@@ -175,7 +175,7 @@ public class AuthenticationService implements IAuthenticateService {
 			ah.setUser(customerRepository.findById(id).get());
 			ah.setStatus(isMatched);
 			Gson gson = new Gson();
-			String matchesJson = gson.toJson(matches); 
+			String matchesJson = gson.toJson(matches);
 			LOGGER.info("Matches: ", matchesJson);
 			ah.setDistanceCalculated(matchesJson);
 			authHistoryRepository.save(ah);
@@ -250,13 +250,42 @@ public class AuthenticationService implements IAuthenticateService {
 					voiceDistance = new UserVoiceDistance();
 				}
 				voiceDistance.setCustomer(customerRepository.findById(id).get());
-				voiceDistance.setMaxDistance(maxNumber + offset);
-				voiceDistance.setMinDistance(minNumber - offset);
+				voiceDistance.setMaxDistance(maxNumber + (maxNumber * offset / 100));
+				double val = minNumber - (minNumber * offset / 100);
+				voiceDistance.setMinDistance(val < 0 ? 0 : val);
 				distanceRepository.save(voiceDistance);
 
 			} catch (UnsupportedAudioFileException | IOException e) {
 				LOGGER.error(e.getMessage(), e);
 			}
 		}
+	}
+
+	@Override
+	public List<AuthHistory> getUserAuthHistory(int id) {
+		List<AuthHistory> history = authHistoryRepository.findByUserId(id);
+		String tempPath = System.getProperty(Constants.USER_HOME) + File.separatorChar
+				+ Constants.VOICE_MASTER_AUTHENTICATION + File.separatorChar + Constants.HISTORY + File.separatorChar
+				+ id;
+
+		File userDir = new File(tempPath);
+		if (!userDir.exists()) {
+			boolean bool = userDir.mkdirs();
+			if (bool) {
+				LOGGER.info("Directory created successfully");
+			} else {
+				LOGGER.error("Sorry couldn’t create specified directory");
+			}
+		}
+		for (AuthHistory authHistory : history) {
+			String newFileName = "" + authHistory.getId() + ".wav";
+			try {
+				File storedFile = createFile(tempPath + File.separatorChar + newFileName, authHistory.getData());
+				LOGGER.info("Voice print has been created for file:" + storedFile.getAbsolutePath());
+			} catch (IOException e1) {
+				LOGGER.error(e1.getMessage(), e1);
+			}
+		}
+		return history;
 	}
 }

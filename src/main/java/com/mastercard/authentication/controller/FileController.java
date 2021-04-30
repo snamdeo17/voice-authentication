@@ -49,8 +49,10 @@ public class FileController {
 		Path filePath = Paths.get(tempPath2);
 		try {
 			authenticationService.getUserAuthHistory(userId);
-			return Files.walk(filePath, 1).map(f -> "" + "http://" + host + ":" + port + "/user/download/" + userId
-					+ "/" + f.toFile().getName()).collect(Collectors.toList());
+			List<String> list = Files.walk(filePath, 1).map(f -> Integer.parseInt(f.toFile().getName().replace(".wav", ""))).sorted().map(d -> d.toString())
+					.collect(Collectors.toList());
+			list.add("http://" + host + ":" + port + "/user/download/" + userId + "/<file-name>.wav");
+			return list;
 		} catch (IOException e) {
 			throw new RuntimeException("Error! -> message = " + e.getMessage());
 		}

@@ -70,6 +70,10 @@ public class AuthenticationService implements IAuthenticateService {
 		byte[] data = file.getBytes();
 		voiceSample = new CustomerVoiceData(customer, fileName, data);
 		voiceSample = authRepository.save(voiceSample);
+		Long size = authRepository.findRecordsByUserEmailId(email);
+		if(size > 2) {
+			calculateDistance(customer.getUserId());
+		}
 		return voiceSample;
 	}
 

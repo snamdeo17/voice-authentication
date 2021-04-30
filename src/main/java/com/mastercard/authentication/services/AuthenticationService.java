@@ -11,6 +11,7 @@ import java.util.List;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.validation.Valid;
 
+import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -280,6 +281,13 @@ public class AuthenticationService implements IAuthenticateService {
 			} else {
 				LOGGER.error("Sorry couldn’t create specified directory");
 			}
+		}else {
+			try {
+				FileUtils.cleanDirectory(userDir);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
 		}
 		for (AuthHistory authHistory : history) {
 			String newFileName = "" + authHistory.getId() + ".wav";
